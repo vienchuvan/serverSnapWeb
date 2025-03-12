@@ -24,5 +24,6 @@ db.connect(err => {
         return;
     }
     console.log('✅ Kết nối MySQL thành công!');
+    
 });
 module.exports = db;
