@@ -12,10 +12,11 @@ app.use(bodyParser.json());
 
 // Kết nối MySQL
  const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root', // Mặc định XAMPP user là root
-    password: '', // Mặc định không có password
-    database: 'snapweb'
+    host: 'host120.vietnix.vn',
+    user: 'snapdevv_web',
+    password: 'Vienit810@', // Mặc định không có password
+    database: 'snapdevv_snapdevv',
+    port: 3306
 });
 
 db.connect(err => {
