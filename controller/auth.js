@@ -10,47 +10,52 @@ router.post("/login", async (req, res) => {
   try {
     const { user, pass } = req.body;
 
-    // Kết nối database
-    const connection = await db.getConnection();
-    try {
-      // Truy vấn user từ database
-      const [users] = await connection.query("SELECT * FROM users WHERE user = ?", [user]);
-
-      if (users.length === 0) {
-        return res.status(200).json({ code: 1, message: "Tài khoản chưa được đăng ký!" });
+    // Truy vấn user từ database
+    db.getConnection(async (err, connection) => {
+      if (err) {
+        console.error("⚠️ Lỗi kết nối database:", err);
+        return res.status(500).json({ error: "Lỗi kết nối database" });
       }
 
-      const userData = users[0];
+      try {
+        const [users] = await connection.promise().query("SELECT * FROM users WHERE user = ?", [user]);
 
-      // Kiểm tra mật khẩu
-      const isMatch = await bcrypt.compare(pass, userData.pass);
-      if (!isMatch) {
-        return res.status(200).json({ code: 0, message: "Mật khẩu không đúng" });
+        if (users.length === 0) {
+          connection.release();
+          return res.status(401).json({ error: "Tài khoản chưa được đăng ký!" });
+        }
+
+        const userData = users[0];
+
+        // Kiểm tra mật khẩu
+        const isMatch = await bcrypt.compare(pass, userData.pass);
+        if (!isMatch) {
+          connection.release();
+          return res.status(401).json({ error: "Mật khẩu không đúng" });
+        }
+
+        // Tạo JWT token
+        const token = jwt.sign({ id: userData.id, user: userData.user }, SECRET_KEY, { expiresIn: "1h" });
+
+        connection.release(); // Giải phóng kết nối
+        res.status(200).json({
+          message: "Đăng nhập thành công",
+          accessToken: token,
+          user: userData,
+        });
+
+      } catch (queryErr) {
+        console.error("❌ Lỗi truy vấn MySQL:", queryErr);
+        res.status(500).json({ error: "Lỗi server", details: queryErr.message });
+        connection.release();
       }
-
-      // Tạo JWT token
-      const token = jwt.sign({ id: userData.id, user: userData.user }, SECRET_KEY, { expiresIn: "1h" });
-
-      res.status(200).json({
-        code: 200,
-        message: "Đăng nhập thành công",
-        accessToken: token,
-        user: userData,
-      });
-
-    } catch (queryErr) {
-      console.error("❌ Lỗi truy vấn MySQL:", queryErr);
-      res.status(500).json({ code: 500, error: "Lỗi server", details: queryErr.message });
-    } finally {
-      connection.release(); // Giải phóng kết nối dù có lỗi hay không
-    }
+    });   
 
   } catch (err) {
-    console.error("⚠️ Lỗi kết nối database:", err);
-    res.status(500).json({ code: 500, error: "Lỗi kết nối database", details: err.message });
+    console.error("Lỗi đăng nhập:", err);
+    res.status(500).json({ error: "Lỗi server", details: err.message });
   }
 });
-
 
 
 module.exports = router;
