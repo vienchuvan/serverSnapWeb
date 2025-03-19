@@ -14,7 +14,7 @@ router.post("/login", async (req, res) => {
     db.getConnection(async (err, connection) => {
       if (err) {
         console.error("⚠️ Lỗi kết nối database:", err);
-        return res.status(500).json({ error: "Lỗi kết nối database" });
+        return res.status(401).json({ error: "Lỗi kết nối database" });
       }
 
       try {
@@ -22,7 +22,7 @@ router.post("/login", async (req, res) => {
 
         if (users.length === 0) {
           connection.release();
-          return res.status(401).json({ error: "Tài khoản chưa được đăng ký!" });
+          return res.status(200).json({ status: 1, message: "Tài khoản chưa được đăng ký!" });
         }
 
         const userData = users[0];
@@ -31,7 +31,7 @@ router.post("/login", async (req, res) => {
         const isMatch = await bcrypt.compare(pass, userData.pass);
         if (!isMatch) {
           connection.release();
-          return res.status(401).json({ error: "Mật khẩu không đúng" });
+          return res.status(200).json({ status: 0, message: "Mật khẩu không đúng" });
         }
 
         // Tạo JWT token
@@ -39,6 +39,7 @@ router.post("/login", async (req, res) => {
 
         connection.release(); // Giải phóng kết nối
         res.status(200).json({
+          status: 200,
           message: "Đăng nhập thành công",
           accessToken: token,
           user: userData,
@@ -46,7 +47,7 @@ router.post("/login", async (req, res) => {
 
       } catch (queryErr) {
         console.error("❌ Lỗi truy vấn MySQL:", queryErr);
-        res.status(500).json({ error: "Lỗi server", details: queryErr.message });
+        res.status(401).json({ error: "Lỗi server", details: queryErr.message });
         connection.release();
       }
     });   
