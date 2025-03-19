@@ -77,15 +77,15 @@ router.post("/login", (req, res) => {
     "SELECT * FROM users WHERE user = ?",
     [user],
     async (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
+      if (err) return res.status(401).json({ error: err.message });
       if (results.length === 0)
-        return res.status(401).json({ error: "Tài khoản chưa được đăng ký !", results: results });
+        return res.status(1).json({ message: "Tài khoản chưa được đăng ký !", results: results });
       const user = results[0];
       console.log("user ", user);
       // Kiểm tra mật khẩu
       const isMatch = await bcrypt.compare(pass, user.pass);
       if (!isMatch)
-        return res.status(401).json({ error: "Mật khẩu không đúng" });
+        return res.status(0).json({ message: "Mật khẩu không đúng" });
 
       // Tạo JWT token
       const token = jwt.sign({ id: user.id, user: user.user }, SECRET_KEY, {expiresIn: "1h", });
