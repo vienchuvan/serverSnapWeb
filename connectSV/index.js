@@ -11,20 +11,23 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Kết nối MySQL
- const db = mysql.createConnection({
+ const db = mysql.createPool({
     host: 'host120.vietnix.vn',
-    user: 'snapdevv_snapdevv', // Mặc định XAMPP user là root
+    user: 'snapdevv_web', // Mặc định XAMPP user là root
     password: 'Vienit810@', // Mặc định không có password
     database: 'snapdevv_snapdevv',
-    port: 3306
+    port: 3306,
+    waitForConnections: true,
+    connectionLimit: 10, 
+    queueLimit: 0
 });
 
-db.connect(err => {
+db.getConnection((err, connection) => {
     if (err) {
         console.error('Lỗi kết nối MySQL:', err);
         return;
     }
     console.log('✅ Kết nối MySQL thành công!');
-    
+    connection.release(); // Giải phóng kết nối sau khi kiểm tra
 });
-module.exports = db;
+module.exports = db.promise();
