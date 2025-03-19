@@ -30,4 +30,4 @@ db.getConnection((err, connection) => {
     console.log('✅ Kết nối MySQL thành công!');
     connection.release(); // Giải phóng kết nối sau khi kiểm tra
 });
-module.exports = db.promise();
+module.exports = db;
