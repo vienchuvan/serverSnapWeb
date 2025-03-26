@@ -6,8 +6,9 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs"); // 🔥 Thêm module fs để kiểm tra thư mục
-const { thongBao } = require("../Sevice/stringThongBao");
+const thongBao = require("../Sevice/stringThongBao");
 const e = require("cors");
+const { randomInt } = require("crypto");
 
 // Đảm bảo thư mục uploads tồn tại
 const app = express();
@@ -81,8 +82,11 @@ router.post("/services/apiBaiViet", async (req, res) => {
     }
 
     else if (funcId === 6) { //api them bai viet
+      const randomID = randomInt(999999);
+console.log( "randomID ", randomID);
+
       db.query(
-        "INSERT INTO quantri(user,title,shortContent,content,urlImgBaiViet,shortURL) VALUES (?,?,?,?,?,?)",
+        "INSERT INTO quantri(user,title,shortContent,content,urlImgBaiViet,shortURL, id) VALUES (?,?,?,?,?,?,?)",
         [
           user,
           titleMaHoa,
@@ -90,6 +94,7 @@ router.post("/services/apiBaiViet", async (req, res) => {
           contentMaHoa,
           urlImgBaiViet,
           shortUrl,
+          randomID,
         ],
         (err, result) => {
           if (err) {
